@@ -6,7 +6,7 @@
 * 
 *  Name: Efe Demirtel Student ID: 126378223 Date: 2025-03-05
 *
-*  Replit Web App URL: ________________________________________________________
+*  Replit Web App URL: https://replit.com/@edemirtel/web322-app?v=1
 * 
 *  GitHub Repository URL: https://github.com/DemirtellEfe/web322-app.git
 *
