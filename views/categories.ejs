@@ -1,0 +1,17 @@
+<%- include("layouts/main") %>
+
+<h1>Explore Game Categories</h1>
+
+<p>Looking for something specific? Browse games by their genre or style.</p>
+
+<ul>
+  <% categories.forEach(cat => { %>
+    <li>
+      <a href="/shop?category=<%= cat.name %>"> <%= cat.name %></a>
+    </li>
+  <% }); %>
+</ul>
+
+
+</body>
+</html>

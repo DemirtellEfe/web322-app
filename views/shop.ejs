@@ -1,0 +1,49 @@
+<%- include("layouts/main") %>
+
+<div style="display: flex;">
+  <aside style="width: 30%; padding: 1em; border-right: 1px solid #ccc;">
+    <h2>Categories</h2>
+    <ul>
+      <% categories.forEach(cat => { %>
+        <li>
+          <a href="/shop?category=<%= cat.name %>"
+             <% if (selectedCategory === cat.name) { %> style="font-weight:bold;" <% } %>>
+            <%= cat.name %>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+
+    <h3 style="margin-top: 2em;">All Games</h3>
+    <% if (items.length === 0) { %>
+      <p>No games available. <a href="/items/add">Add one</a>!</p>
+    <% } else { %>
+      <ul>
+        <% items.forEach(i => { %>
+          <li>
+            <a href="/shop/<%= i.id %>?category=<%= selectedCategory || '' %>"><%= i.title %></a>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </aside>
+
+  <main style="padding: 1em; width: 70%;">
+    <% if (item) { %>
+      <h1><%= item.title %></h1>
+      <p><strong>Category:</strong> <%= item.category %></p>
+      <p><strong>Posted on:</strong> <%= item.postDate %></p>
+      <p><strong>Published:</strong> <%= item.published ? "Yes" : "No" %></p>
+      <% if (item.featureImage) { %>
+        <img src="<%= item.featureImage %>" alt="Game Image" width="300" />
+      <% } else { %>
+        <p>No image available.</p>
+      <% } %>
+    <% } else { %>
+      <p>Select a game from the list to view its details.</p>
+    <% } %>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+<%- include("layouts/main") %>
+<h1>Available Items</h1>
+
+<% if (items && items.length > 0) { %>
+    <ul>
+        <% items.forEach(item => { %>
+            <li>
+                <a href="/item/<%= item.id %>"><%= item.title %></a>
+            </li>
+        <% }); %>
+    </ul>
+<% } else { %>
+    <p>No items available.</p>
+<% } %>
+
+</body>
+</html>
