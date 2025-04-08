@@ -82,13 +82,21 @@ app.post("/items/add", upload.single("featureImage"), (req, res) => {
 });
 
 app.get("/items", (req, res) => {
-  storeService.getAllItems()
-    .then((data) => {
-      if (data.length > 0) res.render("items", { items: data });
-      else res.render("items", { message: "no results" });
-    })
-    .catch(() => res.render("items", { message: "no results" }));
-});
+    storeService.getAllItems()
+      .then((data) => {
+        res.render("items", {
+          items: data,
+          message: data.length > 0 ? null : "no results"
+        });
+      })
+      .catch(() => {
+        res.render("items", {
+          items: [],
+          message: "no results"
+        });
+      });
+  });
+  
 
 app.get("/items/delete/:id", (req, res) => {
   storeService.deletePostById(req.params.id)
@@ -103,14 +111,15 @@ app.get("/item/:id", (req, res) => {
 });
 
 app.get("/categories", (req, res) => {
-  storeService.getCategories()
-    .then((data) => {
-      if (data.length > 0) res.render("categories", { categories: data });
-      else res.render("categories", { message: "no results" });
-    })
-    .catch(() => res.render("categories", { message: "no results" }));
-});
-
+    storeService.getCategories()
+      .then((data) => {
+        res.render("categories", { categories: data }); 
+      })
+      .catch(() => {
+        res.render("categories", { categories: [] });
+      });
+  });
+  
 app.get("/categories/add", (req, res) => {
   res.render("addCategory");
 });
