@@ -1,20 +1,24 @@
-<%- include("layouts/main") %>
-
 <div style="display: flex;">
   <aside style="width: 30%; padding: 1em; border-right: 1px solid #ccc;">
     <h2>Categories</h2>
-    <ul>
-      <% categories.forEach(cat => { %>
-        <li>
-          <a href="/shop?category=<%= cat.name %>"
-             <% if (selectedCategory === cat.name) { %> style="font-weight:bold;" <% } %>>
-            <%= cat.name %>
-          </a>
-        </li>
-      <% }); %>
-    </ul>
+
+    <% if (categories.length === 0) { %>
+      <p>No categories available.</p>
+    <% } else { %>
+      <ul>
+        <% categories.forEach(cat => { %>
+          <li>
+            <a href="/shop?category=<%= cat.id %>"
+               <% if (parseInt(selectedCategory) === cat.id) { %> style="font-weight:bold;" <% } %>>
+              <%= cat.category %>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
 
     <h3 style="margin-top: 2em;">All Games</h3>
+
     <% if (items.length === 0) { %>
       <p>No games available. <a href="/items/add">Add one</a>!</p>
     <% } else { %>
@@ -31,9 +35,18 @@
   <main style="padding: 1em; width: 70%;">
     <% if (item) { %>
       <h1><%= item.title %></h1>
-      <p><strong>Category:</strong> <%= item.category %></p>
+      <p><strong>Category:</strong>
+        <% 
+          const matchedCategory = categories.find(c => c.id === item.category); 
+          if (matchedCategory) { %>
+            <%= matchedCategory.category %>
+        <% } else { %>
+            Unknown
+        <% } %>
+      </p>
       <p><strong>Posted on:</strong> <%= item.postDate %></p>
       <p><strong>Published:</strong> <%= item.published ? "Yes" : "No" %></p>
+
       <% if (item.featureImage) { %>
         <img src="<%= item.featureImage %>" alt="Game Image" width="300" />
       <% } else { %>
@@ -44,6 +57,3 @@
     <% } %>
   </main>
 </div>
-
-</body>
-</html>

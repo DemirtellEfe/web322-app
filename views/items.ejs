@@ -1,17 +1,31 @@
-<%- include("layouts/main") %>
 <h1>Available Items</h1>
+<a href="/items/add" class="btn btn-success pull-right" style="margin-bottom: 10px;">Add Post</a>
 
-<% if (items && items.length > 0) { %>
-    <ul>
-        <% items.forEach(item => { %>
-            <li>
-                <a href="/item/<%= item.id %>"><%= item.title %></a>
-            </li>
-        <% }); %>
-    </ul>
-<% } else { %>
-    <p>No items available.</p>
-<% } %>
-
-</body>
-</html>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Price</th>
+      <th>Published</th>
+      <th>Category</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (items.length > 0) { %>
+      <% items.forEach(item => { %>
+        <tr>
+          <td><%= item.title %></td>
+          <td>$<%= item.price %></td>
+          <td><%= item.published ? "Yes" : "No" %></td>
+          <td><%= item.category %></td>
+          <td>
+            <a href="/items/delete/<%= item.id %>" onclick="return confirm('Delete this item?')" class="btn btn-danger">Delete</a>
+          </td>
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="5">No items found.</td></tr>
+    <% } %>
+  </tbody>
+</table>

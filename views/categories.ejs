@@ -1,16 +1,37 @@
-<%- include("layouts/main") %>
 
 <h1>Explore Game Categories</h1>
 
 <p>Looking for something specific? Browse games by their genre or style.</p>
 
+<a href="/categories/add" class="btn btn-success pull-right" style="margin-bottom: 10px;">Add Category</a>
+
 <ul>
   <% categories.forEach(cat => { %>
     <li>
-      <a href="/shop?category=<%= cat.name %>"> <%= cat.name %></a>
+      <a href="/shop?category=<%= cat.id %>"><%= cat.category %></a>
     </li>
   <% }); %>
 </ul>
+
+<% if (categories.length > 0) { %>
+  <table>
+    <tr>
+      <th>Category</th>
+      <th></th>
+    </tr>
+    <% categories.forEach(cat => { %>
+      <tr>
+        <td><%= cat.category %></td>
+        <td>
+          <a href="/categories/delete/<%= cat.id %>" class="btn btn-danger" onclick="return confirm('Delete this category?')">Delete</a>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+<% } else { %>
+  <p>No categories found.</p>
+<% } %>
+
 
 
 </body>

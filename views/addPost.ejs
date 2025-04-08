@@ -1,11 +1,14 @@
-<%- include("layouts/main") %>
 <h1>Add New Item</h1>
 <form action="/items/add" method="POST" enctype="multipart/form-data">
     <label>Title:</label>
     <input type="text" name="title" required><br><br>
 
     <label>Category:</label>
-    <input type="text" name="category" required><br><br>
+    <select name="category" required>
+    <% categories.forEach(cat => { %>
+        <option value="<%= cat.id %>"><%= cat.category %></option>
+    <% }); %>
+    </select><br><br>
 
     <label>Feature Image:</label>
     <input type="file" name="featureImage"><br><br>

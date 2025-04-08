@@ -1,155 +1,184 @@
 /*********************************************************************************
-*  WEB322 – Assignment 04
-*  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part 
-*  of this assignment has been copied manually or electronically from any other source 
+*  WEB322 – Assignment 05
+*  I declare that this assignment is my own work in accordance with Seneca Academic Policy. 
+*  No part of this assignment has been copied manually or electronically from any other source 
 *  (including 3rd party web sites) or distributed to other students.
-* 
-*  Name: Efe Demirtel Student ID: 126378223 Date: 2025-03-21
+*
+*  Name: Efe Demirtel  Student ID: 126378223  Date: 2025-04-07
 *
 *  Replit Web App URL: https://replit.com/@edemirtel/web322-app?v=1
-* 
 *  GitHub Repository URL: https://github.com/DemirtellEfe/web322-app.git
-*
-********************************************************************************/ 
+********************************************************************************/
 
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
-
-const app = express(); 
-app.set("view engine", "ejs"); 
-
+const app = express();
 const path = require("path");
 const multer = require("multer");
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
 const storeService = require("./data/store-service.js");
-
-const PORT = process.env.PORT || 3000;
-
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true
-});
+const expressLayouts = require("express-ejs-layouts");
 
 const upload = multer();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.static("public")); 
+app.set("view engine", "ejs");
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(expressLayouts);
+app.set("layout", "layouts/main");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
 app.get("/", (req, res) => {
-    res.render("about");
+  res.render("about");
 });
 
 app.get("/items/add", (req, res) => {
-    res.render("addPost");
+  storeService.getCategories()
+    .then((cats) => res.render("addPost", { categories: cats }))
+    .catch(() => res.render("addPost", { categories: [] }));
 });
 
 app.post("/items/add", upload.single("featureImage"), (req, res) => {
-    if (req.file) {
-        let streamUpload = (req) => {
-            return new Promise((resolve, reject) => {
-                let stream = cloudinary.uploader.upload_stream(
-                    (error, result) => result ? resolve(result) : reject(error)
-                );
-                streamifier.createReadStream(req.file.buffer).pipe(stream);
-            });
-        };
+  const processItem = (imageUrl) => {
+    req.body.featureImage = imageUrl;
+    req.body.published = req.body.published ? true : false;
 
-        streamUpload(req).then((uploaded) => {
-            console.log("Uploaded Image URL:", uploaded.url); 
-            processItem(uploaded.url);
-        }).catch(err => res.status(500).send("File upload failed: " + err));
-    } else {
-        console.log("No Image Uploaded, Using Default"); 
-        processItem("");
+    for (let prop in req.body) {
+      if (req.body[prop] === "") req.body[prop] = null;
     }
 
-    function processItem(imageUrl) {
-        req.body.featureImage = imageUrl;
-        storeService.addItem(req.body)
-            .then(() => res.redirect("/items"))
-            .catch(err => res.status(500).send("Failed to add item: " + err));
-    }
+    req.body.postDate = new Date();
+
+    storeService.addItem(req.body)
+      .then(() => res.redirect("/items"))
+      .catch((err) => res.status(500).send("Failed to add item: " + err));
+  };
+
+  if (req.file) {
+    const streamUpload = (req) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream((error, result) => {
+          if (result) resolve(result);
+          else reject(error);
+        });
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+    };
+
+    streamUpload(req)
+      .then((uploaded) => processItem(uploaded.url))
+      .catch((err) => res.status(500).send("File upload failed: " + err));
+  } else {
+    processItem("");
+  }
 });
-
 
 app.get("/items", (req, res) => {
-    storeService.getAllItems()
-        .then(data => res.render("items", { items: data })) 
-        .catch(() => res.render("items", { items: [] }));
+  storeService.getAllItems()
+    .then((data) => {
+      if (data.length > 0) res.render("items", { items: data });
+      else res.render("items", { message: "no results" });
+    })
+    .catch(() => res.render("items", { message: "no results" }));
 });
 
+app.get("/items/delete/:id", (req, res) => {
+  storeService.deletePostById(req.params.id)
+    .then(() => res.redirect("/items"))
+    .catch(() => res.status(500).send("Unable to Remove Item / Item not found"));
+});
 
 app.get("/item/:id", (req, res) => {
-    storeService.getItemById(req.params.id)
-        .then(item => res.render("item", { item: item }))
-        .catch(() => res.render("item", { message: "Item not found" }));
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  storeService.getItemById(req.params.id)
+    .then((item) => res.render("item", { item }))
+    .catch(() => res.render("item", { message: "Item not found" }));
 });
 
 app.get("/categories", (req, res) => {
-    storeService.getCategories()
-        .then(data => res.render("categories", { categories: data }))
-        .catch(() => res.render("categories", { categories: [] }));
+  storeService.getCategories()
+    .then((data) => {
+      if (data.length > 0) res.render("categories", { categories: data });
+      else res.render("categories", { message: "no results" });
+    })
+    .catch(() => res.render("categories", { message: "no results" }));
+});
+
+app.get("/categories/add", (req, res) => {
+  res.render("addCategory");
+});
+
+app.post("/categories/add", (req, res) => {
+  storeService.addCategory(req.body)
+    .then(() => res.redirect("/categories"))
+    .catch((err) => res.status(500).send("Failed to add category: " + err));
+});
+
+app.get("/categories/delete/:id", (req, res) => {
+  storeService.deleteCategoryById(req.params.id)
+    .then(() => res.redirect("/categories"))
+    .catch(() => res.status(500).send("Unable to Remove Category / Category not found"));
 });
 
 app.get("/shop", async (req, res) => {
     try {
-        const category = req.query.category;
-        const allItems = await storeService.getPublishedItems();
+        const categoryId = parseInt(req.query.category);
         const categories = await storeService.getCategories();
+        let items = await storeService.getPublishedItems();
 
-        let filteredItems = allItems;
-        if (category) {
-            filteredItems = allItems.filter(i => i.category === category);
+        if (!isNaN(categoryId)) {
+            items = items.filter(i => i.category === categoryId);
         }
 
-        const latestItem = filteredItems.length > 0 ? filteredItems[0] : null;
-
         res.render("shop", {
-            item: latestItem,
-            items: filteredItems,
-            categories: categories,
-            selectedCategory: category
+            item: null,
+            items,
+            categories,
+            selectedCategory: categoryId
         });
     } catch (err) {
         res.status(500).send("Unable to load shop");
     }
 });
 
-
-
 app.get("/shop/:id", async (req, res) => {
     try {
-        const category = req.query.category;
-
-        const allItems = await storeService.getPublishedItems();
+        const categoryId = parseInt(req.query.category);
         const categories = await storeService.getCategories();
-
-        let filteredItems = allItems;
-        if (category) {
-            filteredItems = allItems.filter(i => i.category === category);
-        }
+        const allItems = await storeService.getPublishedItems();
 
         const selectedItem = allItems.find(i => i.id == req.params.id);
+        let filteredItems = allItems;
+
+        if (!isNaN(categoryId)) {
+            filteredItems = allItems.filter(i => i.category === categoryId);
+        }
 
         res.render("shop", {
             item: selectedItem,
             items: filteredItems,
-            categories: categories,
-            selectedCategory: category
+            categories,
+            selectedCategory: categoryId
         });
     } catch (err) {
         res.status(500).send("Unable to load selected item");
     }
 });
-app.get("/about", (req, res) => {
-    res.render("about");
-});
 
 
+storeService.initialize()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log("Unable to start server: " + err);
+  });
