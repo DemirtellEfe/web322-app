@@ -36,9 +36,8 @@ cloudinary.config({
   secure: true,
 });
 
-app.get("/", (req, res) => {
-  res.render("about");
-});
+// ROUTES
+app.get("/", (req, res) => res.render("about"));
 
 app.get("/items/add", (req, res) => {
   storeService.getCategories()
@@ -50,11 +49,9 @@ app.post("/items/add", upload.single("featureImage"), (req, res) => {
   const processItem = (imageUrl) => {
     req.body.featureImage = imageUrl;
     req.body.published = req.body.published ? true : false;
-
     for (let prop in req.body) {
       if (req.body[prop] === "") req.body[prop] = null;
     }
-
     req.body.postDate = new Date();
 
     storeService.addItem(req.body)
@@ -82,21 +79,20 @@ app.post("/items/add", upload.single("featureImage"), (req, res) => {
 });
 
 app.get("/items", (req, res) => {
-    storeService.getAllItems()
-      .then((data) => {
-        res.render("items", {
-          items: data,
-          message: data.length > 0 ? null : "no results"
-        });
-      })
-      .catch(() => {
-        res.render("items", {
-          items: [],
-          message: "no results"
-        });
+  storeService.getAllItems()
+    .then((data) => {
+      res.render("items", {
+        items: data,
+        message: data.length > 0 ? null : "no results"
       });
-  });
-  
+    })
+    .catch(() => {
+      res.render("items", {
+        items: [],
+        message: "no results"
+      });
+    });
+});
 
 app.get("/items/delete/:id", (req, res) => {
   storeService.deletePostById(req.params.id)
@@ -111,15 +107,11 @@ app.get("/item/:id", (req, res) => {
 });
 
 app.get("/categories", (req, res) => {
-    storeService.getCategories()
-      .then((data) => {
-        res.render("categories", { categories: data }); 
-      })
-      .catch(() => {
-        res.render("categories", { categories: [] });
-      });
-  });
-  
+  storeService.getCategories()
+    .then((data) => res.render("categories", { categories: data }))
+    .catch(() => res.render("categories", { categories: [] }));
+});
+
 app.get("/categories/add", (req, res) => {
   res.render("addCategory");
 });
@@ -137,50 +129,48 @@ app.get("/categories/delete/:id", (req, res) => {
 });
 
 app.get("/shop", async (req, res) => {
-    try {
-        const categoryId = parseInt(req.query.category);
-        const categories = await storeService.getCategories();
-        let items = await storeService.getPublishedItems();
+  try {
+    const categoryId = parseInt(req.query.category);
+    const categories = await storeService.getCategories();
+    let items = await storeService.getPublishedItems();
 
-        if (!isNaN(categoryId)) {
-            items = items.filter(i => i.category === categoryId);
-        }
-
-        res.render("shop", {
-            item: null,
-            items,
-            categories,
-            selectedCategory: categoryId
-        });
-    } catch (err) {
-        res.status(500).send("Unable to load shop");
+    if (!isNaN(categoryId)) {
+      items = items.filter(i => i.category === categoryId);
     }
+
+    res.render("shop", {
+      item: null,
+      items,
+      categories,
+      selectedCategory: categoryId
+    });
+  } catch (err) {
+    res.status(500).send("Unable to load shop");
+  }
 });
 
 app.get("/shop/:id", async (req, res) => {
-    try {
-        const categoryId = parseInt(req.query.category);
-        const categories = await storeService.getCategories();
-        const allItems = await storeService.getPublishedItems();
+  try {
+    const categoryId = parseInt(req.query.category);
+    const categories = await storeService.getCategories();
+    const allItems = await storeService.getPublishedItems();
+    const selectedItem = allItems.find(i => i.id == req.params.id);
+    let filteredItems = allItems;
 
-        const selectedItem = allItems.find(i => i.id == req.params.id);
-        let filteredItems = allItems;
-
-        if (!isNaN(categoryId)) {
-            filteredItems = allItems.filter(i => i.category === categoryId);
-        }
-
-        res.render("shop", {
-            item: selectedItem,
-            items: filteredItems,
-            categories,
-            selectedCategory: categoryId
-        });
-    } catch (err) {
-        res.status(500).send("Unable to load selected item");
+    if (!isNaN(categoryId)) {
+      filteredItems = allItems.filter(i => i.category === categoryId);
     }
-});
 
+    res.render("shop", {
+      item: selectedItem,
+      items: filteredItems,
+      categories,
+      selectedCategory: categoryId
+    });
+  } catch (err) {
+    res.status(500).send("Unable to load selected item");
+  }
+});
 
 storeService.initialize()
   .then(() => {
@@ -189,5 +179,5 @@ storeService.initialize()
     });
   })
   .catch((err) => {
-    console.log("Unable to start server: " + err);
+    console.error("Unable to start server:", err);
   });
