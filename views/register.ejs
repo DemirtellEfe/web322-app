@@ -1,0 +1,24 @@
+<h1>Register</h1>
+
+<% if (typeof successMessage !== 'undefined') { %>
+  <div class="alert alert-success">
+    <strong>Success:</strong> <%= successMessage %>
+  </div>
+  <a class="btn btn-success" href="/login">Proceed to Log in</a><br><br>
+<% } else { %>
+
+  <% if (typeof errorMessage !== 'undefined') { %>
+    <div class="alert alert-danger">
+      <strong>Error:</strong> <%= errorMessage %>
+    </div>
+  <% } %>
+
+  <form action="/register" method="POST">
+    <input type="text" name="userName" placeholder="User Name" value="<%= typeof userName !== 'undefined' ? userName : '' %>" required><br><br>
+    <input type="password" name="password" placeholder="Password" required><br><br>
+    <input type="password" name="password2" placeholder="Confirm Password" required><br><br>
+    <input type="email" name="email" placeholder="Email Address" required><br><br>
+    <input type="submit" value="Register">
+  </form>
+
+<% } %>

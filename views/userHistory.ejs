@@ -1,0 +1,18 @@
+<h2><%= session.user.userName %> (<%= session.user.email %>) History</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Login Date/Time</th>
+      <th>Client Info</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% session.user.loginHistory.forEach(log => { %>
+      <tr>
+        <td><%= log.dateTime %></td>
+        <td><%= log.userAgent %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
